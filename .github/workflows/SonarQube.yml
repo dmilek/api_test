@@ -1,0 +1,72 @@
+name: SonarCloud Analysis for Node.js
+
+on:
+  workflow_dispatch:  # Allows for manual triggering
+  push:
+    branches:
+      - main  # Trigger on pushes to the main branch
+  pull_request:
+    branches:
+      - main  # Trigger on pull requests to the main branch
+
+jobs:
+  sonarcloud:
+    runs-on: ubuntu-latest  # Use the latest Ubuntu runner
+
+    steps:
+      # Step 1: Checkout the repository code
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # Step 2: Set up Node.js
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.9.0'  # Specify the Node.js version
+
+      # Step 3: Cache Node.js dependencies
+      - name: Cache node modules
+        uses: actions/cache@v3
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
+      # Step 4: Install dependencies
+      - name: Install dependencies
+        run: npm install
+
+      # Step 5: Install curl and unzip for SonarScanner CLI
+      - name: Install curl and unzip
+        run: sudo apt-get install -y curl unzip
+
+      # Step 6: Define SonarScanner version
+      - name: Define SonarScanner version
+        run: echo "SONAR_SCANNER_VERSION=5.0.1.3006" >> $GITHUB_ENV
+
+      # Step 7: Download and install SonarScanner CLI
+      - name: Install SonarScanner
+        run: |
+          curl -sSLo sonar-scanner-cli.zip https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-${{ env.SONAR_SCANNER_VERSION }}-linux.zip
+          unzip sonar-scanner-cli.zip
+          mv sonar-scanner-${{ env.SONAR_SCANNER_VERSION }}-linux sonar-scanner
+          echo "$(pwd)/sonar-scanner/bin" >> $GITHUB_PATH
+
+      # Step 8: Verify SonarScanner Installation
+      - name: Verify SonarScanner Installation
+        run: sonar-scanner --version
+
+      # Step 9: Run SonarCloud Analysis
+      - name: Run SonarCloud Analysis
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_ORG_KEY: ${{ secrets.SONAR_ORG_KEY }}
+          SONAR_PROJECT_KEY: ${{ secrets.SONAR_PROJECT_KEY }}
+        run: |
+          sonar-scanner \
+            -Dsonar.projectKey=$SONAR_PROJECT_KEY \
+            -Dsonar.organization=$SONAR_ORG_KEY \
+            -Dsonar.host.url=https://sonarcloud.io \
+            -Dsonar.token=$SONAR_TOKEN \
+            -Dsonar.javascript.version=20.9.0  # Specify the Node.js version used for analysis
