@@ -1,0 +1,41 @@
+name: Node.js Manual Install
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Download Node.js
+        run: |
+          NODE_VERSION=20.9.0
+          NODE_DIST_URL="https://nodejs.org/dist/v$NODE_VERSION/node-v$NODE_VERSION-linux-x64.tar.xz"
+          echo "Downloading Node.js from $NODE_DIST_URL"
+          curl -O $NODE_DIST_URL
+
+      - name: Extract Node.js
+        run: |
+          tar -xf node-v20.9.0-linux-x64.tar.xz
+          mv node-v20.9.0-linux-x64 /usr/local/node
+
+      - name: Set Up Node.js
+        run: |
+          echo "export PATH=/usr/local/node/bin:\$PATH" >> $GITHUB_ENV
+          echo "Node.js Version: $(node -v)"
+          echo "NPM Version: $(npm -v)"
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run test script
+        run: node runtest.js
