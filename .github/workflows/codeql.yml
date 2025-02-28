@@ -4,11 +4,7 @@ on:
   workflow_dispatch: # Allows for manual trigger
   push:
     branches: [ "main" ] # Trigger on push to the main branch
-  # pull_request:
-    # branches: [ "main" ] # Trigger on PR targeting the main branch
-  # schedule:
-    # - cron: '00 00 * * 0' # Optional: Weekly run at midnight UTC on Sunday
-    
+
 jobs:
   analyze:
     permissions:
@@ -37,10 +33,6 @@ jobs:
         uses: github/codeql-action/init@v3
         with:
           languages: ${{ matrix.language }}
-
-      - name: Build the code (Optional, depending on your project)
-        run: |
-          npm run build # Or any build command if needed
 
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@v3
