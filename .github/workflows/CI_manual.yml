@@ -1,3 +1,4 @@
+
 name: Node.js Manual Install
 
 on:
@@ -26,13 +27,13 @@ jobs:
       - name: Extract Node.js
         run: |
           tar -xf node-v20.9.0-linux-x64.tar.xz
-          mv node-v20.9.0-linux-x64 /usr/local/node
+          mv node-v20.9.0-linux-x64 $HOME/node
 
       - name: Set Up Node.js
         run: |
-          echo "export PATH=/usr/local/node/bin:\$PATH" >> $GITHUB_ENV
-          echo "Node.js Version: $(node -v)"
-          echo "NPM Version: $(npm -v)"
+          echo "export PATH=$HOME/node/bin:\$PATH" >> $GITHUB_ENV
+          echo "Node.js Version: $( $HOME/node/bin/node -v )"
+          echo "NPM Version: $( $HOME/node/bin/npm -v )"
 
       - name: Install dependencies
         run: npm install
